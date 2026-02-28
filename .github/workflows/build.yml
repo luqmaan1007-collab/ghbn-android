@@ -21,23 +21,35 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Clean up duplicate Gradle files
+        run: |
+          if [ -f "build.gradle.kts" ] && [ -f "build.gradle" ]; then
+            rm -f build.gradle
+          fi
+          if [ -f "app/build.gradle.kts" ] && [ -f "app/build.gradle" ]; then
+            rm -f app/build.gradle
+          fi
+          if [ -f "settings.gradle.kts" ] && [ -f "settings.gradle" ]; then
+            rm -f settings.gradle
+          fi
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.6'
+          cache-disabled: true
       - name: Build with Gradle
         run: |
           if [ "${{ github.event.inputs.output_format }}" = "aab" ]; then
             if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
-              gradle bundleRelease
+              gradle bundleRelease --stacktrace
             else
-              gradle bundleDebug
+              gradle bundleDebug --stacktrace
             fi
           else
             if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
-              gradle assembleRelease
+              gradle assembleRelease --stacktrace
             else
-              gradle assembleDebug
+              gradle assembleDebug --stacktrace
             fi
           fi
       - name: Upload Artifact
