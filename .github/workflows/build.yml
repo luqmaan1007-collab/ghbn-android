@@ -21,22 +21,23 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.6'
       - name: Build with Gradle
         run: |
           if [ "${{ github.event.inputs.output_format }}" = "aab" ]; then
             if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
-              ./gradlew bundleRelease
+              gradle bundleRelease
             else
-              ./gradlew bundleDebug
+              gradle bundleDebug
             fi
           else
             if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
-              ./gradlew assembleRelease
+              gradle assembleRelease
             else
-              ./gradlew assembleDebug
+              gradle assembleDebug
             fi
           fi
       - name: Upload Artifact
