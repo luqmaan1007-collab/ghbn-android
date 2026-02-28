@@ -1,0 +1,48 @@
+name: Build Android
+on:
+  workflow_dispatch:
+    inputs:
+      build_variant:
+        description: 'Build Variant'
+        required: true
+        default: 'debug'
+      output_format:
+        description: 'Output Format'
+        required: true
+        default: 'apk'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: |
+          if [ "${{ github.event.inputs.output_format }}" = "aab" ]; then
+            if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
+              ./gradlew bundleRelease
+            else
+              ./gradlew bundleDebug
+            fi
+          else
+            if [ "${{ github.event.inputs.build_variant }}" = "release" ]; then
+              ./gradlew assembleRelease
+            else
+              ./gradlew assembleDebug
+            fi
+          fi
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-artifact
+          path: |
+            app/build/outputs/apk/**/*.apk
+            app/build/outputs/bundle/**/*.aab
